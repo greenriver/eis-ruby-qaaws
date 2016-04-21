@@ -41,16 +41,18 @@ class Qaaws
       soap_header = "<QaaWSHeader><serializedSession><![CDATA[#{@serialized_session}]]></serializedSession></QaaWSHeader>"
     end
 
-    #Log XML request
-    #ops = savon_client.operation(options[:soap_action].to_sym)      
-    #puts ops.build(message: message).to_s
+    #Store this in order to log xml request
+    ops = savon_client.operation(options[:soap_action].to_sym)      
+    request_xml_string = ops.build(message: message).to_s
+
+    puts request_xml_string
 
     resp = savon_client.call(request_name.to_sym, message: message, soap_header: soap_header)
 
     begin
       tbl = resp_to_table(resp, request_type, response_name) #response is structured differently depending on request type
     rescue 
-      raise QaawsError, "Unable to convert QaaWS XML response to JSON.  XML response: \n\n #{resp}"
+      raise QaawsError, "Unable to convert QaaWS XML response to JSON.  XML REQUEST: #{xml_request_str}. XML RESPONSE: #{resp}."
     end
 
     Qaaws::Table.new(tbl)

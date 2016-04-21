@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'qaaws'
-  s.version = '0.13.0'
+  s.version = '0.14.0'
   s.authors = ['Rob Goretsky']
   s.email = %w(robert.goretsky@gmail.com)
   s.summary = %q{Ruby Access to the SAP Business Objects Query As A Web Service interface}
