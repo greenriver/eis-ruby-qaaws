@@ -52,7 +52,7 @@ class Qaaws
     begin
       tbl = resp_to_table(resp, request_type, response_name) #response is structured differently depending on request type
     rescue 
-      raise QaawsError, "Unable to convert QaaWS XML response to JSON.  XML REQUEST: #{xml_request_str}. XML RESPONSE: #{resp}."
+      raise QaawsError, "Unable to convert QaaWS XML response to JSON.  XML REQUEST: #{xml_request_string}. XML RESPONSE: #{resp}."
     end
 
     Qaaws::Table.new(tbl)
