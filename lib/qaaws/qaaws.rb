@@ -42,7 +42,7 @@ class Qaaws
     end
 
     #Store this in order to log xml request
-    ops = savon_client.operation(options[:soap_action].to_sym)      
+    ops = savon_client.operation(request_name.to_sym)      
     request_xml_string = ops.build(message: message).to_s
 
     puts request_xml_string
