@@ -24,6 +24,8 @@ class Qaaws
     @cuid = options[:cuid]
     @httpi_opts = options[:httpi_opts] || {}
     @wsdl_location = "#{@endpoint}?wsdl=1&cuid=#{@cuid}"
+
+    puts "WSDL Location: " + @wsdl_location
   end
 
   def request(options={})
@@ -45,14 +47,21 @@ class Qaaws
     ops = savon_client.operation(request_name.to_sym)      
     request_xml_string = ops.build(message: message).to_s
 
+    puts "SOAP Request:"
     puts request_xml_string
+
+    puts "Message: "
+    puts message
 
     resp = savon_client.call(request_name.to_sym, message: message, soap_header: soap_header)
 
+    puts "SOAP Response:"
+    puts resp.to_s
+
     begin
       tbl = resp_to_table(resp, request_type, response_name) #response is structured differently depending on request type
-    rescue 
-      raise QaawsError, "Unable to convert QaaWS XML response to JSON.  XML REQUEST: #{request_xml_string}. XML RESPONSE: #{resp}."
+    rescue
+      raise QaawsError, resp.hash[:envelope][:body][response_name.to_sym][:message]
     end
 
     Qaaws::Table.new(tbl)
@@ -87,7 +96,7 @@ class Qaaws
     elsif request_type == 'custom_soap_action'
       return  options[:soap_action] + '_response'
     else 
-      return nil #not needed for run_query_as_a_service
+      return 'run_query_as_a_service_response'
     end
   end
 
