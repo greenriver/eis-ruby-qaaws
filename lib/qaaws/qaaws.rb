@@ -124,16 +124,15 @@ class Qaaws
       end
       
       rows = resp_body[:table][:row]
-      
-      if rows.kind_of?(Hash) #If rows are a hash, convert to array
-        rows = rows[:cell]
+      if rows.kind_of?(Hash)
+        rows = [rows]
       end
 
       tbl = []
 
       rows.each { |row| #convert XML to JSON array
           obj = {}
-          row.kind_of?(Hash) ? cell = row[:cell] : cell = row
+          cell = row[:cell]
           if cell.kind_of?(Array) #Cell is an array becuase it has multiple records representing multiple keys in the JSON
             cell.each_with_index {|d, i| 
                 if d.kind_of?(Hash) #Empty cells come through as a hash.  Convert to nil.
