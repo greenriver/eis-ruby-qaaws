@@ -61,7 +61,12 @@ class Qaaws
     begin
       tbl = resp_to_table(resp, request_type, response_name) #response is structured differently depending on request type
     rescue
-      raise QaawsError, resp.hash[:envelope][:body][response_name.to_sym][:message]
+      message = resp.hash[:envelope][:body][response_name.to_sym][:message]
+      if message
+        raise QaawsError, resp.hash[:envelope][:body][response_name.to_sym][:message]
+      else
+        raise QaawsError, "Unable to convert XML to JSON"
+      end
     end
 
     Qaaws::Table.new(tbl)
@@ -119,11 +124,16 @@ class Qaaws
       end
       
       rows = resp_body[:table][:row]
+      
+      if rows.kind_of?(Hash) #If rows are a hash, convert to array
+        rows = rows[:cell]
+      end
+
       tbl = []
 
       rows.each { |row| #convert XML to JSON array
           obj = {}
-          cell = row[:cell]
+          row.kind_of?(Hash) ? cell = row[:cell] : cell = row
           if cell.kind_of?(Array) #Cell is an array becuase it has multiple records representing multiple keys in the JSON
             cell.each_with_index {|d, i| 
                 if d.kind_of?(Hash) #Empty cells come through as a hash.  Convert to nil.
