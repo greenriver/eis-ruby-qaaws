@@ -47,16 +47,20 @@ class Qaaws
     ops = savon_client.operation(request_name.to_sym)      
     request_xml_string = ops.build(message: message).to_s
 
-    puts "SOAP Request:"
-    puts request_xml_string
+    #puts "SOAP Request:"
+    #puts request_xml_string
 
-    puts "Message: "
-    puts message
+    #puts "Message: "
+    #puts message
 
-    resp = savon_client.call(request_name.to_sym, message: message, soap_header: soap_header)
+    begin
+      resp = savon_client.call(request_name.to_sym, message: message, soap_header: soap_header)
+    rescue Timeout::Error
+      raise QaawsError, "Timeout error.  The database may be experiencing a high volume of requests."
+    end
 
-    puts "SOAP Response:"
-    puts resp.to_s
+    #puts "SOAP Response:"
+    #puts resp.to_s
 
     begin
       tbl = resp_to_table(resp, request_type, response_name) #response is structured differently depending on request type
@@ -158,7 +162,7 @@ class Qaaws
 
   private
   def savon_client
-    @savon_client ||= Savon.client(@httpi_opts.merge(wsdl: @wsdl_location).merge(convert_request_keys_to: :none))
+    @savon_client ||= Savon.client(@httpi_opts.merge(wsdl: @wsdl_location).merge(convert_request_keys_to: :none).merge(read_timeout: 60))
   end
 
   def wsdl_obj
