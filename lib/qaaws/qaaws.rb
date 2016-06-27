@@ -162,7 +162,7 @@ class Qaaws
 
   private
   def savon_client
-    @savon_client ||= Savon.client(@httpi_opts.merge(wsdl: @wsdl_location).merge(convert_request_keys_to: :none).merge(read_timeout: 1))
+    @savon_client ||= Savon.client(@httpi_opts.merge(wsdl: @wsdl_location).merge(convert_request_keys_to: :none).merge(read_timeout: 60))
   end
 
   def wsdl_obj
