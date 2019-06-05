@@ -18,10 +18,10 @@ qaaws.gemspec
 
   s.require_paths = %w(lib)
 
-  s.add_dependency 'nokogiri', '~> 1.8.1'
+  s.add_dependency 'nokogiri', '1.10.3'
   s.add_dependency 'savon', '2.12.0'
   s.add_dependency 'activesupport'
-  s.add_dependency 'json', '~> 1.5'
+  s.add_dependency 'json', '~> 1.7'
   s.add_dependency 'i18n'
   s.add_development_dependency 'pry'
 
