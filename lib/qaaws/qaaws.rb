@@ -15,9 +15,9 @@ class Qaaws
     @username = options[:username]
     @password = options[:password]
     @serialized_session = options[:serialized_session]
-    
+
     unless ((@username and @password) or (@serialized_session))
-      raise QaawsError, 'Must provide username and password, or serialized_session to create a Qaaws Object' 
+      raise QaawsError, 'Must provide username and password, or serialized_session to create a Qaaws Object'
     end
 
     @endpoint = options[:endpoint]
@@ -37,21 +37,21 @@ class Qaaws
     message = prepare_options(options, request_type, request_name) unless request_type == 'lov'
 
     if @username and @password
-      message.merge!(login: @username, password: @password) 
+      message.merge!(login: @username, password: @password)
     else
       #Need to supply this as a string as exit-Savon doesn't currently support conversion of hashes to CDATA block
       soap_header = "<QaaWSHeader><serializedSession><![CDATA[#{@serialized_session}]]></serializedSession></QaaWSHeader>"
     end
 
     #Store this in order to log xml request
-    ops = savon_client.operation(request_name.to_sym)      
+    ops = savon_client.operation(request_name.to_sym)
     request_xml_string = ops.build(message: message).to_s
 
-    #puts "SOAP Request:"
-    #puts request_xml_string
+    # puts "SOAP Request:"
+    # puts request_xml_string
 
-    #puts "Message: "
-    #puts message
+    # puts "Message: "
+    # puts message
 
     begin
       resp = savon_client.call(request_name.to_sym, message: message, soap_header: soap_header)
@@ -104,7 +104,7 @@ class Qaaws
       return 'values_of_' + options[:lov] + '_response'
     elsif request_type == 'custom_soap_action'
       return  options[:soap_action] + '_response'
-    else 
+    else
       return 'run_query_as_a_service_response'
     end
   end
@@ -114,7 +114,7 @@ class Qaaws
     if request_type == 'lov'
       resp_body = resp.hash[:envelope][:body][response_name.to_sym]
       return resp_body[:lov][:valueindex]
-    
+
     elsif request_type == 'custom_soap_action'
       resp_body = resp.hash[:envelope][:body][response_name.to_sym]
 
@@ -126,7 +126,7 @@ class Qaaws
       else #If only one header, value is returned as string.  Need to convert this to an array
         headers = [header_row[:cell]]
       end
-      
+
       rows = resp_body[:table][:row]
       if rows.kind_of?(Hash)
         rows = [rows]
@@ -138,7 +138,7 @@ class Qaaws
           obj = {}
           cell = row[:cell]
           if cell.kind_of?(Array) #Cell is an array becuase it has multiple records representing multiple keys in the JSON
-            cell.each_with_index {|d, i| 
+            cell.each_with_index {|d, i|
                 if d.kind_of?(Hash) #Empty cells come through as a hash.  Convert to nil.
                   d = nil
                 end
@@ -175,7 +175,7 @@ class Qaaws
 
   def prepare_options(options, request_type, request_name)
     if request_type == 'custom_soap_action' #if request_type param is not actually sent via soap but only exists to indicate the method to use
-      options.tap { |o| o.delete(request_type.to_sym) } #remove it 
+      options.tap { |o| o.delete(request_type.to_sym) } #remove it
     end
 
     clean_opts = {}
@@ -191,13 +191,14 @@ class Qaaws
     end
 
     options.each do |k,v|
+      k = k.to_sym
       if k.to_s == 'soap_action' then
         next
       end
 
       new_v = nil
       unless spec_params[k]
-        raise QaawsError, "QaawsError: No parameter named '#{k}' found in service definition.  All params in service definition are: #{spec_params.keys.join(', ')}" 
+        raise QaawsError, "QaawsError: No parameter named '#{k}' found in service definition.  All params in service definition are: #{spec_params.keys.join(', ')}"
       end
       if spec_params[k][:type] == 'dateTime'
         dt = (v.respond_to?(:parses_datetime?) and v.parses_datetime?) ? DateTime.parse(v) : v
@@ -208,7 +209,7 @@ class Qaaws
         end
       elsif request_type == 'custom_soap_action' and spec_params[k][:type]=='LovValueIndex' #webi reports require LOV to be formatted like this
         new_v = {:valueofPrompt => v}
-      else 
+      else
         new_v = v
       end
       if new_v.class == String
