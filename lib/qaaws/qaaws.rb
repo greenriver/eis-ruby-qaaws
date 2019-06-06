@@ -23,9 +23,13 @@ class Qaaws
     @endpoint = options[:endpoint]
     @cuid = options[:cuid]
     @httpi_opts = options[:httpi_opts] || {}
+    @url_options = options[:url_options] || {}
     @wsdl_location = "#{@endpoint}?wsdl=1&cuid=#{@cuid}"
+    if @url_options.present?
+      @wsdl_location << "&#{@url_options.to_query}"
+    end
 
-    puts "WSDL Location: " + @wsdl_location
+    Rails.logger.debug "WSDL Location: " + @wsdl_location
   end
 
   def request(options={})
@@ -160,9 +164,13 @@ class Qaaws
     end
   end
 
+  def wsdl_location
+    @wsdl_location
+  end
+
   private
   def savon_client
-    @savon_client ||= Savon.client(@httpi_opts.merge(wsdl: @wsdl_location).merge(convert_request_keys_to: :none).merge(read_timeout: 60))
+    @savon_client ||= Savon.client(@httpi_opts.merge(wsdl: @wsdl_location).merge(convert_request_keys_to: :none).merge(read_timeout: 6_000))
   end
 
   def wsdl_obj
@@ -187,7 +195,7 @@ class Qaaws
         raise QaawsError, "SOAP action #{request_name} not found.  Set the soap_action parameter equal to one of these: #{wsdl_obj.soap_actions.join(', ')}"
       end
     rescue NoMethodError
-      raise QaawsError, "QaawsError: Cuid #{@cuid} is invalid, or WSDL not present at #{@wsdl_location}"
+      raise QaawsError, "QaawsError: Cuid #{@cuid} is invalid, or WSDL not present at #{@wsdl_location}; #{spec_params.inspect}"
     end
 
     options.each do |k,v|
